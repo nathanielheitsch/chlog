@@ -5,7 +5,7 @@ from typing import Optional
 import inquirer
 import typer
 from typing_extensions import Annotated
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress
 from common.ai_service import AIService
 from common.git import getBranches, getCommitMessages, getDiff
 from lib.writer import Writer
@@ -13,9 +13,7 @@ from lib.writer import Writer
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='[%(asctime)s] %(levelname)s - %(message)s')
 
-wr = Writer()
 loader_total = 0
-
 
 def selectBranch(base=True) -> str:
     branches = getBranches()
@@ -47,7 +45,7 @@ def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commi
 
 def writeDiff(result):
     logging.debug(result)
-    return wr.writeDiff(result)
+    return Writer.writeDiff(result)
 
 
 async def pursue(diffs, commit_messages, token: str):
