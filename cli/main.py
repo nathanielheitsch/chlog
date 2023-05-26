@@ -6,11 +6,9 @@ import inquirer
 import typer
 from typing_extensions import Annotated
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from lib.ai_service import AIService
-from lib.git import getBranches, getDiff
+from common.ai_service import AIService
+from common.git import getBranches, getDiff
 from lib.writer import Writer
-
-from lib.consts import TOKEN_ENV_NAME
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='[%(asctime)s] %(levelname)s - %(message)s')
@@ -32,7 +30,7 @@ def selectBranch(base=True) -> str:
     return answers["branch"]
 
 
-def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commit: Annotated[Optional[str], typer.Argument()] = None):
+def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commit: Annotated[Optional[str], typer.Argument()] = None, token: Annotated[str, typer.Option(help="API Token for AI Services")] = None):
     if new_commit == None:
         new_commit = selectBranch(False)
     if old_commit == None:
@@ -43,7 +41,7 @@ def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commi
         logging.info(
             f'There is no difference between {old_commit} and {new_commit}')
         return
-    asyncio.run(pursue(diffs))
+    asyncio.run(pursue(diffs, token))
 
 
 def writeDiff(result):
@@ -51,8 +49,8 @@ def writeDiff(result):
     return wr.writeDiff(result)
 
 
-async def pursue(diffs):
-    ai_service = AIService()
+async def pursue(diffs, token: str):
+    ai_service = AIService(token)
     with Progress(
         transient=True,
     ) as progress:

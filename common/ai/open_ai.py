@@ -1,23 +1,20 @@
 import asyncio
-import json
 import logging
-import os
 from typing import Any, Callable, List
 import aiohttp
 
 from .ai_provider_interface import AIProviderInterface
-from cli.lib.consts import TOKEN_ENV_NAME
 
 
 class OpenAIProvider(AIProviderInterface):
 
-    def __init__(self) -> None:
+    def __init__(self, token: str) -> None:
         self.url = "https://api.openai.com/v1/chat/completions"
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer {}".format(os.getenv(TOKEN_ENV_NAME))
+            "Authorization": "Bearer {}".format(token)
         }
-        logging.debug(f'Using API Key: {os.getenv(TOKEN_ENV_NAME)}')
+        logging.debug(f'Using API Key: {token}')
 
     async def openAISummarize(self, diffs: List[str], cb: Callable[[str], Any]) -> str:
         logging.debug("starting summarize")
