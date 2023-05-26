@@ -28,7 +28,7 @@ def selectBranch(base=True) -> str:
     return answers["branch"]
 
 
-def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commit: Annotated[Optional[str], typer.Argument()] = None, token: Annotated[str, typer.Option(help="API Token for AI Services")] = None):
+def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commit: Annotated[Optional[str], typer.Argument()] = None, token: Annotated[str, typer.Option(help="API Token for AI Services")] = None, title: Annotated[str, typer.Option(help="Title of the changelog")] = None):
     if new_commit == None:
         new_commit = selectBranch(False)
     if old_commit == None:
@@ -40,7 +40,7 @@ def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commi
         return
     commit_messages = getCommitMessages(new_commit, old_commit)
     logging.info("Processing {} diffs over {} commits".format(len(diffs), len(commit_messages.splitlines())))
-    asyncio.run(pursue(diffs, commit_messages, token))
+    asyncio.run(pursue(diffs, commit_messages, token, title if title else f"{old_commit} to {new_commit}"))
 
 
 def writeDiff(result):
@@ -48,13 +48,14 @@ def writeDiff(result):
     return Writer.writeDiff(result)
 
 
-async def pursue(diffs, commit_messages, token: str):
+async def pursue(diffs, commit_messages, token: str, title: str):
     ai_service = AIService(token)
+    Writer.init()
     with Progress(
         transient=True,
     ) as progress:
         diff_len = len(diffs)
-        task = progress.add_task(description="Processing...", total=diff_len+1)
+        task = progress.add_task(description="Processing...", total=diff_len)
         chlog = ""
         i=0
         def inc(s: str):
@@ -63,12 +64,15 @@ async def pursue(diffs, commit_messages, token: str):
             i += 1
             progress.update(task, advance=1, description="Processing {}/{}".format(str(i).rjust(len(str(diff_len)) - len(str(i)), " "), diff_len))
             chlog += s
-            writeDiff(s)
         await ai_service.ai.chlog(diffs, commit_messages, inc)
         progress.update(task, description="Finalizing Summary...")
         summary = await ai_service.ai.summarize(chlog, commit_messages)
+        while summary.startswith("\n"):
+            summary = summary[1:]
+        while summary.endswith("\n"):
+            summary = summary[:-1]
         progress.update(task, advance=1)
-        writeDiff(f"\n\nSummary:{summary}")
+        writeDiff(f"{title}\n{summary}")
         logging.info("Success! See the CHANGELOG")
 
 

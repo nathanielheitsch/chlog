@@ -43,6 +43,10 @@ chlog requires two parameters:
 1. `new_commit` (optional): The latest commit hash. By default, it is set to `None`.
 2. `old_commit` (optional): The previous commit hash. By default, it is set to `None`.
 
+Optional Flags:
+1. `--token` (optional): API Token for AI Services [default: None]
+2. `--title` (optional): Title of the changelog [default: None] 
+
 ### Basic usage:
 
 ```bash

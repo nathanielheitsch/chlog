@@ -28,7 +28,7 @@ class OpenAIProvider(AIProviderInterface):
                     "messages": [
                         {"role": "system", "content": "You are a code changelog creator - you take in git diffs and provide a helpful list of changes."},
                         {"role": "user", "content": "Here are the commit messages that may provide context to the code changes:\n\n" + commit_messages},
-                        {"role": "user", "content": "Return a bulleted list describing the effects of the code changes in this git diff, if the changes are not consequential return nothing - ensure every line returned starts as a bullet:\n\n" + diff},
+                        {"role": "user", "content": "Return a short paragraph describing the effects of the code changes in this git diff, if the changes are not consequential return nothing:\n\n" + diff},
                     ],
                     "max_tokens": 1200,
                     "temperature": 0
@@ -70,9 +70,9 @@ class OpenAIProvider(AIProviderInterface):
             data = {
                 "model": "gpt-3.5-turbo",
                 "messages": [
-                    {"role": "system", "content": "You are a code changelog summarizer - you take in a large changelog and summarize the important changes."},
+                    {"role": "system", "content": "You are a code changelog summarizer - you take in a large description of code changes and summarize the important changes into a bullet list changelog."},
                     {"role": "user", "content": f"Here are the commit messages that may provide context to the code changes:\n\n{commit_messages}"},
-                    {"role": "user", "content": f"Return a shortened and consise version of this changelog - ensure to explain important changes:\n\n{chlog}"},
+                    {"role": "user", "content": f"Return a consise bulleted list changelog given the changes described below - ensure to explain important changes:\n\n{chlog}"},
                 ],
                 "max_tokens": 1200,
                 "temperature": 0
