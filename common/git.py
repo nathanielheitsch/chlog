@@ -4,14 +4,20 @@ from typing import List
 
 from .consts import MAX_CHAR
 
-
 def getBranches() -> List[str]:
     ret = []
+    try:
+        subprocess.run("git fetch --tags", stdout=subprocess.PIPE, shell=True)
+        ret.extend(subprocess.run("git tag", stdout=subprocess.PIPE, shell=True).stdout.decode('UTF-8').splitlines())
+    except:
+        logging.error("Unable to retreive tags")
+
     try:
         ret.extend(subprocess.run(
             "git branch -a --format \"%(refname)\"", stdout=subprocess.PIPE, shell=True).stdout.decode('UTF-8').splitlines())
     except:
         logging.error("Unable to retreive branches")
+
     try:
         ret.extend(subprocess.run(
             "git log --pretty=%H -n 10", stdout=subprocess.PIPE, shell=True).stdout.decode('UTF-8').splitlines())
