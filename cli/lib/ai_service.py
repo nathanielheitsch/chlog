@@ -16,6 +16,5 @@ class AIService:
             case _:
                 self.ai = OpenAIProvider()
 
-    async def processDiffs(self, diffs: List[str], cb: Callable[[str], Any]) -> AsyncGenerator[str, str]:
-        aiCalls = [self.ai.openAISummarize(diff, cb) for diff in diffs]
-        await asyncio.gather(*aiCalls)
+    async def processDiffs(self, diffs: List[str], cb: Callable[[str], Any]):
+        await self.ai.openAISummarize(diffs, cb)

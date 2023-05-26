@@ -5,14 +5,18 @@ from typing import Optional
 import inquirer
 import typer
 from typing_extensions import Annotated
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from lib.ai_service import AIService
 from lib.git import getBranches, getDiff
 from lib.writer import Writer
 
 from lib.consts import TOKEN_ENV_NAME
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='[%(asctime)s] %(levelname)s - %(message)s')
+
+wr = Writer()
+loader_total = 0
 
 
 def selectBranch(base=True) -> str:
@@ -42,11 +46,21 @@ def gen(new_commit: Annotated[Optional[str], typer.Argument()] = None, old_commi
     asyncio.run(pursue(diffs))
 
 
+def writeDiff(result):
+    logging.debug(result)
+    return wr.writeDiff(result)
+
+
 async def pursue(diffs):
-    wr = Writer()
     ai_service = AIService()
-    def callback(result): return wr.writeDiff(result)
-    await ai_service.processDiffs(diffs, callback)
+    with Progress(
+        transient=True,
+    ) as progress:
+        task = progress.add_task(description="Processing...", total=len(diffs))
+        def inc(s: str):
+            progress.update(task, advance=1)
+            writeDiff(s)
+        await ai_service.processDiffs(diffs, inc)
 
 
 if __name__ == "__main__":
