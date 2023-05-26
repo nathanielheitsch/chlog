@@ -9,6 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/cli/main.py",
+            "args": [],
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {

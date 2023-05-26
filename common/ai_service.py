@@ -12,9 +12,10 @@ class AIService:
         token = token if token else os.getenv(TOKEN_ENV_NAME)
         match provider:
             case 1:
-                self.ai = OpenAIProvider(token)
+                self._ai = OpenAIProvider(token)
             case _:
-                self.ai = OpenAIProvider(token)
+                self._ai = OpenAIProvider(token)
 
-    async def processDiffs(self, diffs: List[str], cb: Callable[[str], Any]):
-        await self.ai.openAISummarize(diffs, cb)
+    @property
+    def ai(self):
+        return self._ai

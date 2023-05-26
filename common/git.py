@@ -19,6 +19,8 @@ def getBranches() -> List[str]:
         logging.error("Unable to retreive commits")
     return ret
 
+def getCommitMessages(new_commit: str, old_commit: str) -> str:
+    return subprocess.run(f'git log --format="(%s)" {old_commit}...{new_commit}', stdout=subprocess.PIPE, shell=True).stdout.decode('UTF-8')
 
 def getDiff(newCommit: str, oldCommit: str) -> List[str]:
     out = subprocess.run(
